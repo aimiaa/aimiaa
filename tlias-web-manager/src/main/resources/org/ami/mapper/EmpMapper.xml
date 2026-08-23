@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.ami.mapper.EmpMapper">
+    <update id="updateById">
+        update emp
+        <set>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="job != null">
+                job = #{job},
+            </if>
+            <if test="salary != null">
+                salary = #{salary},
+            </if>
+            <if test="image != null">
+                image = #{image},
+            </if>
+            <if test="entryDate != null">
+                entry_date = #{entryDate},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="getEmpList" resultType="org.ami.pojo.Emp">
+        select e.*, d.name deptName
+        from emp e
+        left join dept d on e.dept_id = d.id
+        <where>
+            <if test="name != null and name != ''">
+                e.name like concat('%', #{name}, '%')
+            </if>
+            <if test="gender != null">
+                and e.gender = #{gender}
+            </if>
+            <if test="begin != null and end != null">
+                and e.entry_date between #{begin} and #{end}
+            </if>
+        </where>
+        order by e.update_time desc
+    </select>
+    <select id="getJobOption" resultType="java.util.Map">
+        <!-- 统计各个职位的员工人数 -->
+            select
+                (case job when 1 then '班主任'
+                          when 2 then '讲师'
+                          when 3 then '学工主管'
+                          when 4 then '教研主管'
+                          when 5 then '咨询师'
+                          else '其他' end)  pos,
+                count(*) total
+            from emp group by job
+            order by total
+    </select>
+    <select id="getEmpGenderCount" resultType="java.util.Map">
+        select  if(gender = 1 , '男性员工', '女性员工') name,count(*) value from emp group by gender
+    </select>
+
+    <!--    <insert id="addEmp">-->
+<!--        insert into emp(username, name, gender, phone, job, salary, image, entry_date, dept_id, create_time, update_time)-->
+<!--        VALUES (#{username}, #{name}, #{gender}, #{phone}, #{job}, #{salary}, #{image}, #{entryDate}, #{deptId}, #{createTime}, #{updateTime})-->
+<!--    </insert>-->
+    <delete id="deleteEmpById" >
+        delete from emp where id in (
+        <foreach collection="ids" item="id" separator="," >
+        #{id}
+        </foreach>
+        )
+
+    </delete>
+
+</mapper>
+
